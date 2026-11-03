@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Інтерактивний тренажер: Складання балансу автосервісу</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .drag-item { cursor: grab; }
+        .drag-item:active { cursor: grabbing; }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-12">
+
+    <!-- Header -->
+    <header class="bg-indigo-700 text-white shadow-lg py-6 px-4 no-print">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <span class="bg-indigo-600 text-indigo-100 text-xs font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider">Основи галузевої економіки та підприємництва</span>
+                <h1 class="text-2xl font-bold mt-1">Практична робота: Складання балансу підприємства</h1>
+                <p class="text-indigo-200 text-sm">Професія: Слюсар з ремонту колісних транспортних засобів / Тракторист-водій</p>
+            </div>
+            <div class="bg-indigo-800 p-3 rounded-lg border border-indigo-600 text-center min-w-[200px]">
+                <div class="text-xs text-indigo-300">Варіант завдання:</div>
+                <div id="variant-badge" class="text-lg font-bold text-yellow-300">Варіант #1</div>
+                <button onclick="generateNewVariant()" class="mt-1 text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-1 rounded transition no-print">
+                    🔄 Новий варіант (від списування)
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto mt-6 px-4 space-y-6">
+
+        <!-- Student Info Card -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Прізвище та Ім'я студента</label>
+                <input type="text" id="student-name" placeholder="Введіть ваше ПІБ..." class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Група / Курс</label>
+                <input type="text" id="student-group" placeholder="Наприклад: С-11 (1 курс)" class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Дата виконання</label>
+                <input type="date" id="student-date" class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+        </div>
+
+        <!-- Task Condition Card -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <h2 class="text-lg font-bold text-slate-900 border-b pb-2 mb-4 flex items-center gap-2">
+                📌 Завдання № 1. Умова господарської ситуації
+            </h2>
+            <p class="text-slate-600 mb-4 leading-relaxed">
+                Ви працюєте слюсарем в автосервісі <strong class="text-indigo-700">ТОВ "АвтоМайстер"</strong>. На 31 грудня 2025 року автосервіс має такі показники діяльності. 
+                Вам необхідно самостійно класифікувати кожну позицію, визначити, що належить до <strong class="text-emerald-700">АКТИВУ</strong>, а що до <strong class="text-rose-700">ПАСИВУ</strong>, правильно рознести назви статей і суми у відповідні частини балансу та перевірити рівність.
+            </p>
+
+            <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-100 mb-6">
+                <h3 class="font-semibold text-indigo-900 text-sm mb-2">💡 Вихідні дані ТОВ "АвтоМайстер":</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm" id="source-data-list">
+                    <!-- Dynamic Data loaded here -->
+                </div>
+            </div>
+
+            <div class="bg-amber-50 border-l-4 border-amber-400 p-4 text-xs text-amber-900 rounded-r-lg font-medium">
+                <strong>ОСНОВНЕ ПРАВИЛО БАЛАНСУ:</strong> <br>
+                <span class="text-sm font-bold underline">Сума активів = Сума пасивів</span>
+            </div>
+        </div>
+
+        <!-- Interactive Balance Sheet Construction -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <h2 class="text-lg font-bold text-slate-900 border-b pb-2 mb-4 flex items-center justify-between">
+                <span>📊 Самостійне складання "БАЛАНСУ АВТОСЕРВІСУ"</span>
+                <span class="text-xs font-normal text-slate-500">Оберіть назву статті та вкажіть суму</span>
+            </h2>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- АКТИВ -->
+                <div class="border-2 border-emerald-200 rounded-xl p-4 bg-emerald-50/30">
+                    <div class="flex justify-between items-center bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold mb-4">
+                        <span>АКТИВ (Назва статті)</span>
+                        <span>Сума (грн)</span>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Row 1 -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <select id="asset-select-1" class="sm:col-span-2 border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                                <option value="">-- Оберіть статтю --</option>
+                                <option value="cash">Грошові кошти на рахунку</option>
+                                <option value="parts">Запаси запчастин</option>
+                                <option value="tools">Інструменти та обладнання</option>
+                                <option value="capital">Статутний капітал</option>
+                                <option value="debt">Борг постачальнику</option>
+                            </select>
+                            <input type="number" id="input-asset-val-1" placeholder="Сума грн" class="border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                        </div>
+
+                        <!-- Row 2 -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <select id="asset-select-2" class="sm:col-span-2 border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                                <option value="">-- Оберіть статтю --</option>
+                                <option value="cash">Грошові кошти на рахунку</option>
+                                <option value="parts">Запаси запчастин</option>
+                                <option value="tools">Інструменти та обладнання</option>
+                                <option value="capital">Статутний капітал</option>
+                                <option value="debt">Борг постачальнику</option>
+                            </select>
+                            <input type="number" id="input-asset-val-2" placeholder="Сума грн" class="border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                        </div>
+
+                        <!-- Row 3 -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <select id="asset-select-3" class="sm:col-span-2 border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                                <option value="">-- Оберіть статтю --</option>
+                                <option value="cash">Грошові кошти на рахунку</option>
+                                <option value="parts">Запаси запчастин</option>
+                                <option value="tools">Інструменти та обладнання</option>
+                                <option value="capital">Статутний капітал</option>
+                                <option value="debt">Борг постачальнику</option>
+                            </select>
+                            <input type="number" id="input-asset-val-3" placeholder="Сума грн" class="border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-3 border-t-2 border-emerald-300 flex justify-between items-center bg-emerald-100 p-3 rounded-lg font-bold text-emerald-900">
+                        <span>БАЛАНС АКТИВУ:</span>
+                        <span id="total-asset-display">0 грн</span>
+                    </div>
+                </div>
+
+                <!-- ПАСИВ -->
+                <div class="border-2 border-rose-200 rounded-xl p-4 bg-rose-50/30">
+                    <div class="flex justify-between items-center bg-rose-600 text-white px-4 py-2 rounded-lg font-bold mb-4">
+                        <span>ПАСИВ (Назва статті)</span>
+                        <span>Сума (грн)</span>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Row 1 -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <select id="passive-select-1" class="sm:col-span-2 border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-rose-500 focus:outline-none bg-white">
+                                <option value="">-- Оберіть статтю --</option>
+                                <option value="cash">Грошові кошти на рахунку</option>
+                                <option value="parts">Запаси запчастин</option>
+                                <option value="tools">Інструменти та обладнання</option>
+                                <option value="capital">Статутний капітал</option>
+                                <option value="debt">Борг постачальнику</option>
+                            </select>
+                            <input type="number" id="input-passive-val-1" placeholder="Сума грн" class="border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-rose-500 focus:outline-none bg-white">
+                        </div>
+
+                        <!-- Row 2 -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <select id="passive-select-2" class="sm:col-span-2 border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-rose-500 focus:outline-none bg-white">
+                                <option value="">-- Оберіть статтю --</option>
+                                <option value="cash">Грошові кошти на рахунку</option>
+                                <option value="parts">Запаси запчастин</option>
+                                <option value="tools">Інструменти та обладнання</option>
+                                <option value="capital">Статутний капітал</option>
+                                <option value="debt">Борг постачальнику</option>
+                            </select>
+                            <input type="number" id="input-passive-val-2" placeholder="Сума грн" class="border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-rose-500 focus:outline-none bg-white">
+                        </div>
+
+                        <!-- Row 3 (Extra Row for flexibility) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <select id="passive-select-3" class="sm:col-span-2 border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-rose-500 focus:outline-none bg-white">
+                                <option value="">-- Оберіть статтю (якщо є) --</option>
+                                <option value="cash">Грошові кошти на рахунку</option>
+                                <option value="parts">Запаси запчастин</option>
+                                <option value="tools">Інструменти та обладнання</option>
+                                <option value="capital">Статутний капітал</option>
+                                <option value="debt">Борг постачальнику</option>
+                            </select>
+                            <input type="number" id="input-passive-val-3" placeholder="Сума грн" class="border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-rose-500 focus:outline-none bg-white">
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-3 border-t-2 border-rose-300 flex justify-between items-center bg-rose-100 p-3 rounded-lg font-bold text-rose-900">
+                        <span>БАЛАНС ПАСИВУ:</span>
+                        <span id="total-passive-display">0 грн</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Equal Verification Box -->
+            <div id="balance-status-box" class="mt-6 p-4 rounded-xl border text-center transition-all bg-slate-100 border-slate-300 text-slate-700">
+                <span class="font-medium text-sm">Заповніть назви статей та суми для обрахунку підсумків</span>
+            </div>
+        </div>
+
+        <!-- Interactive Balance Sheet Construction -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <h2 class="text-lg font-bold text-slate-900 border-b pb-2 mb-4 flex items-center justify-between">
+                <span>📊 Інтерактивна таблиця "БАЛАНС АВТОСЕРВІСУ"</span>
+                <span class="text-xs font-normal text-slate-500">Заповніть поля відповідними сумами</span>
+            </h2>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- АКТИВ -->
+                <div class="border-2 border-emerald-200 rounded-xl p-4 bg-emerald-50/30">
+                    <div class="flex justify-between items-center bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold mb-4">
+                        <span>АКТИВ (Майно та ресурси)</span>
+                        <span>Сума (грн)</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 mb-1">1. Грошові кошти на рахунку</label>
+                            <input type="number" id="input-asset-cash" placeholder="Введіть суму грн" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 mb-1">2. Запаси запчастин на складі</label>
+                            <input type="number" id="input-asset-parts" placeholder="Введіть суму грн" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 mb-1">3. Інструменти та обладнання (підйомники, верстати)</label>
+                            <input type="number" id="input-asset-tools" placeholder="Введіть суму грн" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-3 border-t-2 border-emerald-300 flex justify-between items-center bg-emerald-100 p-3 rounded-lg font-bold text-emerald-900">
+                        <span>БАЛАНС АКТИВУ:</span>
+                        <span id="total-asset-display">0 грн</span>
+                    </div>
+                </div>
+
+                <!-- ПАСИВ -->
+                <div class="border-2 border-rose-200 rounded-xl p-4 bg-rose-50/30">
+                    <div class="flex justify-between items-center bg-rose-600 text-white px-4 py-2 rounded-lg font-bold mb-4">
+                        <span>ПАСИВ (Джерела та зобов'язання)</span>
+                        <span>Сума (грн)</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 mb-1">1. Статутний капітал (вклад власника)</label>
+                            <input type="number" id="input-passive-capital" placeholder="Введіть суму грн" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 mb-1">2. Борг постачальнику за запчастини</label>
+                            <input type="number" id="input-passive-debt" placeholder="Введіть суму грн" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none bg-white">
+                        </div>
+                        <!-- Empty placeholder to match height -->
+                        <div class="opacity-0 pointer-events-none">
+                            <label class="block text-xs font-medium mb-1">Резервний рядок</label>
+                            <input type="text" class="w-full p-2.5">
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-3 border-t-2 border-rose-300 flex justify-between items-center bg-rose-100 p-3 rounded-lg font-bold text-rose-900">
+                        <span>БАЛАНС ПАСИВУ:</span>
+                        <span id="total-passive-display">0 грн</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Equal Verification Box -->
+            <div id="balance-status-box" class="mt-6 p-4 rounded-xl border text-center transition-all bg-slate-100 border-slate-300 text-slate-700">
+                <span class="font-medium text-sm">Введіть дані у таблицю для перевірки рівності Активу та Пасиву</span>
+            </div>
+        </div>
+
+        <!-- 4 Analytical Questions Section -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <h2 class="text-lg font-bold text-slate-900 border-b pb-2 mb-4 flex items-center gap-2">
+                ❓ Завдання № 2. Контрольні запитання (Аналіз господарських ситуацій)
+            </h2>
+            <p class="text-xs text-slate-500 mb-6">Дайте розширені та обґрунтовані відповіді на запитання, застосовуючи отримані знання з економіки автосервісу.</p>
+
+            <div class="space-y-6">
+                <!-- Question 1 -->
+                <div class="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                    <label class="block font-semibold text-sm text-slate-800 mb-2">
+                        1. Якщо автосервіс терміново закупить нове діагностичне обладнання (сканер) за рахунок грошових коштів із каси, як це змінить загальну суму (підсумок) Активу балансу?
+                    </label>
+                    <textarea id="q1-answer" rows="3" placeholder="Напишіть вашу відповідь..." class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                    <label class="block font-semibold text-sm text-slate-800 mb-2">
+                        2. Як слюсар-ремонтник, своєю щоденною працею (збереження інструменту, відсутність браку), ви впливаєте на збереження активів ТОВ "АвтоМайстер"? Наведіть 2 конкретні приклади.
+                    </label>
+                    <textarea id="q2-answer" rows="3" placeholder="Напишіть вашу відповідь..." class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                    <label class="block font-semibold text-sm text-slate-800 mb-2">
+                        3. Уявіть, що автосервіс повністю погасив борг перед постачальником запчастин із банківського рахунку. Що відбудеться з Активом та Пасивом балансу?
+                    </label>
+                    <textarea id="q3-answer" rows="3" placeholder="Напишіть вашу відповідь..." class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                </div>
+
+                <!-- Question 4 -->
+                <div class="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                    <label class="block font-semibold text-sm text-slate-800 mb-2">
+                        4. Чому для стабільної роботи автосервісу важливо, щоб сума грошових коштів не була рівною 0 грн, навіть якщо у підприємства є багато дорогого обладнання?
+                    </label>
+                    <textarea id="q4-answer" rows="3" placeholder="Напишіть вашу відповідь..." class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: 2 Situational Exercises Section -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <h2 class="text-lg font-bold text-slate-900 border-b pb-2 mb-4 flex items-center gap-2">
+                ⚙️ Завдання № 3. Ситуаційні вправи для самостійного розв'язання
+            </h2>
+            <p class="text-xs text-slate-500 mb-6">Проаналізуйте господарські ситуації та визначте, як зміняться статті балансу після проведення операцій.</p>
+
+            <div class="space-y-6">
+                <!-- Situation 1 -->
+                <div class="p-5 rounded-xl bg-indigo-50/50 border border-indigo-200">
+                    <div class="flex items-center gap-2 text-indigo-900 font-bold mb-2">
+                        <span class="bg-indigo-600 text-white text-xs px-2.5 py-1 rounded-md">Ситуація 1</span>
+                        <span>Операція з запчастинами та виручкою</span>
+                    </div>
+                    <p class="text-sm text-slate-700 mb-4 leading-relaxed">
+                        Слюсар ТОВ "АвтоМайстер" виконав ремонт ходової частини трактора. За виконану роботу та використані запчастини клієнт розрахувався готівкою/переказом у розмірі <strong>15 000 грн</strong>. 
+                        З цієї суми <strong>8 000 грн</strong> — це вартість списуваних зі складу запчастин, а <strong>7 000 грн</strong> — прибуток автосервісу за надані послуги.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Як зміниться стаття "Грошові кошти"?</label>
+                            <input type="text" id="sit1-cash" placeholder="Наприклад: Збільшиться на 15 000 грн" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Як зміниться стаття "Запаси запчастин"?</label>
+                            <input type="text" id="sit1-parts" placeholder="Наприклад: Зменшиться на 8 000 грн" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Situation 2 -->
+                <div class="p-5 rounded-xl bg-amber-50/50 border border-amber-200">
+                    <div class="flex items-center gap-2 text-amber-900 font-bold mb-2">
+                        <span class="bg-amber-600 text-white text-xs px-2.5 py-1 rounded-md">Ситуація 2</span>
+                        <span>Придбання інструменту та виплата боргу</span>
+                    </div>
+                    <p class="text-sm text-slate-700 mb-4 leading-relaxed">
+                        Директор автосервісу дав вказівку придбати новий комплект пневмоінструменту для слюсарів вартістю <strong>10 000 грн</strong> за рахунок грошей з банківського рахунку. 
+                        Одночасно було перераховано <strong>20 000 грн</strong> постачальнику запчастин для часткового погашення боргу.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Обчисліть нову суму Грошових коштів у касі/рахунку:</label>
+                            <input type="text" id="sit2-calc-cash" placeholder="Запишіть розрахунок та підсумкову суму..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Що станеться з остаточним залишком Боргу постачальнику?</label>
+                            <input type="text" id="sit2-calc-debt" placeholder="Вкажіть новий залишок боргу..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none bg-white">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Controls -->
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-6 rounded-xl shadow-sm border border-slate-200 no-print">
+            <button onclick="checkPracticeWork()" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-xl shadow transition duration-200 flex items-center justify-center gap-2">
+                ✅ Перевірити та оцінити роботy
+            </button>
+            <button onclick="window.print()" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-6 rounded-xl shadow transition duration-200 flex items-center justify-center gap-2">
+                🖨️ Зберегти у PDF / Роздрукувати
+            </button>
+        </div>
+
+        <!-- Evaluation Results Modal / Banner -->
+        <div id="result-card" class="hidden bg-white p-6 rounded-xl shadow-lg border-2 border-indigo-500">
+            <h3 class="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
+                🏆 Результати виконання практичної роботи
+            </h3>
+            <div id="result-content" class="space-y-3 text-sm text-slate-700">
+                <!-- Evaluation details will appear here -->
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Data variants to prevent copying among students
+        const variants = [
+            {
+                id: 1,
+                name: "Варіант №1",
+                cash: 30000,
+                parts: 20000,
+                tools: 100000,
+                capital: 120000,
+                debt: 30000
+            },
+            {
+                id: 2,
+                name: "Варіант №2",
+                cash: 45000,
+                parts: 35000,
+                tools: 150000,
+                capital: 180000,
+                debt: 50000
+            },
+            {
+                id: 3,
+                name: "Варіант №3",
+                cash: 25000,
+                parts: 40000,
+                tools: 110000,
+                capital: 135000,
+                debt: 40000
+            },
+            {
+                id: 4,
+                name: "Варіант №4",
+                cash: 50000,
+                parts: 30000,
+                tools: 200000,
+                capital: 220000,
+                debt: 60000
+            }
+        ];
+
+        let currentVariantIndex = 0;
+
+        function loadVariant(index) {
+            currentVariantIndex = index;
+            const data = variants[index];
+            document.getElementById('variant-badge').innerText = data.name;
+
+            const listEl = document.getElementById('source-data-list');
+            listEl.innerHTML = `
+                <div class="bg-white p-2.5 rounded border border-indigo-100 flex justify-between">
+                    <span>Грошові кошти на банківському рахунку:</span>
+                    <strong class="text-indigo-900">${data.cash.toLocaleString()} грн</strong>
+                </div>
+                <div class="bg-white p-2.5 rounded border border-indigo-100 flex justify-between">
+                    <span>Запаси запчастин:</span>
+                    <strong class="text-indigo-900">${data.parts.toLocaleString()} грн</strong>
+                </div>
+                <div class="bg-white p-2.5 rounded border border-indigo-100 flex justify-between">
+                    <span>Інструменти та обладнання:</span>
+                    <strong class="text-indigo-900">${data.tools.toLocaleString()} грн</strong>
+                </div>
+                <div class="bg-white p-2.5 rounded border border-indigo-100 flex justify-between">
+                    <span>Статутний капітал:</span>
+                    <strong class="text-indigo-900">${data.capital.toLocaleString()} грн</strong>
+                </div>
+                <div class="bg-white p-2.5 rounded border border-indigo-100 flex justify-between sm:col-span-2">
+                    <span>Борг постачальнику за запчастини:</span>
+                    <strong class="text-indigo-900">${data.debt.toLocaleString()} грн</strong>
+                </div>
+            `;
+            
+            // Clear inputs
+            for (let i = 1; i <= 3; i++) {
+                if (document.getElementById(`asset-select-${i}`)) document.getElementById(`asset-select-${i}`).value = '';
+                if (document.getElementById(`input-asset-val-${i}`)) document.getElementById(`input-asset-val-${i}`).value = '';
+                if (document.getElementById(`passive-select-${i}`)) document.getElementById(`passive-select-${i}`).value = '';
+                if (document.getElementById(`input-passive-val-${i}`)) document.getElementById(`input-passive-val-${i}`).value = '';
+            }
+            calculateBalance();
+        }
+
+        function generateNewVariant() {
+            const nextIndex = (currentVariantIndex + 1) % variants.length;
+            loadVariant(nextIndex);
+        }
+
+        // Real-time calculation logic
+        function calculateBalance() {
+            let totalAsset = 0;
+            let totalPassive = 0;
+
+            for (let i = 1; i <= 3; i++) {
+                const aVal = parseFloat(document.getElementById(`input-asset-val-${i}`).value) || 0;
+                totalAsset += aVal;
+
+                const pVal = parseFloat(document.getElementById(`input-passive-val-${i}`).value) || 0;
+                totalPassive += pVal;
+            }
+
+            document.getElementById('total-asset-display').innerText = `${totalAsset.toLocaleString()} грн`;
+            document.getElementById('total-passive-display').innerText = `${totalPassive.toLocaleString()} грн`;
+
+            const statusBox = document.getElementById('balance-status-box');
+
+            if (totalAsset === 0 && totalPassive === 0) {
+                statusBox.className = "mt-6 p-4 rounded-xl border text-center transition-all bg-slate-100 border-slate-300 text-slate-700";
+                statusBox.innerHTML = `<span class="font-medium text-sm">Заповніть назви статей та суми для обрахунку підсумків</span>`;
+            } else if (totalAsset === totalPassive) {
+                statusBox.className = "mt-6 p-4 rounded-xl border text-center transition-all bg-emerald-100 border-emerald-400 text-emerald-900";
+                statusBox.innerHTML = `
+                    <div class="font-bold text-base flex items-center justify-center gap-2">
+                        ⚖️ Підсумки Активу (${totalAsset.toLocaleString()} грн) та Пасиву (${totalPassive.toLocaleString()} грн) РІВНІ
+                    </div>
+                `;
+            } else {
+                statusBox.className = "mt-6 p-4 rounded-xl border text-center transition-all bg-rose-100 border-rose-400 text-rose-900";
+                statusBox.innerHTML = `
+                    <div class="font-bold text-base flex items-center justify-center gap-2">
+                        ⚠️ Підсумки НЕ ЗБІГАЮТЬСЯ (Актив: ${totalAsset.toLocaleString()} грн | Пасив: ${totalPassive.toLocaleString()} грн)
+                    </div>
+                `;
+            }
+        }
+
+        // Add event listeners for inputs
+        for (let i = 1; i <= 3; i++) {
+            document.getElementById(`input-asset-val-${i}`)?.addEventListener('input', calculateBalance);
+            document.getElementById(`input-passive-val-${i}`)?.addEventListener('input', calculateBalance);
+        }
+
+        // Verification function WITHOUT solution reveals
+        function checkPracticeWork() {
+            const name = document.getElementById('student-name').value.trim();
+            const group = document.getElementById('student-group').value.trim();
+            const targetData = variants[currentVariantIndex];
+
+            if (!name || !group) {
+                alert("Будь ласка, вкажіть ваше Прізвище, Ім'я та Групу перед перевіркою!");
+                return;
+            }
+
+            // Verify Assets
+            const validAssetKeys = ['cash', 'parts', 'tools'];
+            const validPassiveKeys = ['capital', 'debt'];
+
+            let userAssetData = {};
+            let userPassiveData = {};
+            let isStrictAssetCorrect = true;
+            let isStrictPassiveCorrect = true;
+
+            for (let i = 1; i <= 3; i++) {
+                const aKey = document.getElementById(`asset-select-${i}`).value;
+                const aVal = parseFloat(document.getElementById(`input-asset-val-${i}`).value) || 0;
+                if (aKey) {
+                    if (!validAssetKeys.includes(aKey)) isStrictAssetCorrect = false; // standard placed in wrong side
+                    userAssetData[aKey] = (userAssetData[aKey] || 0) + aVal;
+                }
+
+                const pKey = document.getElementById(`passive-select-${i}`).value;
+                const pVal = parseFloat(document.getElementById(`input-passive-val-${i}`).value) || 0;
+                if (pKey) {
+                    if (!validPassiveKeys.includes(pKey)) isStrictPassiveCorrect = false; // asset placed in passive
+                    userPassiveData[pKey] = (userPassiveData[pKey] || 0) + pVal;
+                }
+            }
+
+            // Exact match validation
+            const assetMatch = isStrictAssetCorrect && 
+                userAssetData['cash'] === targetData.cash && 
+                userAssetData['parts'] === targetData.parts && 
+                userAssetData['tools'] === targetData.tools;
+
+            const passiveMatch = isStrictPassiveCorrect && 
+                userPassiveData['capital'] === targetData.capital && 
+                userPassiveData['debt'] === targetData.debt;
+
+            const q1 = document.getElementById('q1-answer').value.trim();
+            const q2 = document.getElementById('q2-answer').value.trim();
+            const q3 = document.getElementById('q3-answer').value.trim();
+            const q4 = document.getElementById('q4-answer').value.trim();
+
+            const sit1Cash = document.getElementById('sit1-cash').value.trim();
+            const sit1Parts = document.getElementById('sit1-parts').value.trim();
+            const sit2Cash = document.getElementById('sit2-calc-cash').value.trim();
+            const sit2Debt = document.getElementById('sit2-calc-debt').value.trim();
+
+            let score = 0;
+            let feedback = [];
+
+            // Score Task 1 (6 points)
+            if (assetMatch && passiveMatch) {
+                score += 6;
+                feedback.push("✅ <strong>Завдання 1 (Баланс):</strong> Усі статті класифіковано та підраховано вірно (6/6 балів).");
+            } else {
+                feedback.push("❌ <strong>Завдання 1 (Баланс):</strong> Допущено помилку у класифікації статей або підрахунках рознесених сум.");
+            }
+
+            // Score Questions (6 points)
+            let qScore = 0;
+            if (q1.length > 5) qScore += 1.5;
+            if (q2.length > 5) qScore += 1.5;
+            if (q3.length > 5) qScore += 1.5;
+            if (q4.length > 5) qScore += 1.5;
+            score += qScore;
+            feedback.push(`📝 <strong>Завдання 2 (Запитання):</strong> Надано відповідей (оцінка виконання: ${qScore}/6 балів).`);
+
+            // Score Situational Exercises (4 points)
+            let sitScore = 0;
+            if (sit1Cash.length > 2 && sit1Parts.length > 2) sitScore += 2;
+            if (sit2Cash.length > 2 && sit2Debt.length > 2) sitScore += 2;
+            score += sitScore;
+            feedback.push(`⚙️ <strong>Завдання 3 (Ситуаційні вправи):</strong> Виконано вправ на ${sitScore}/4 балів.`);
+
+            // Show result WITHOUT exposing correct answers
+            const resultCard = document.getElementById('result-card');
+            const resultContent = document.getElementById('result-content');
+            resultCard.classList.remove('hidden');
+
+            resultContent.innerHTML = `
+                <div class="p-3 bg-indigo-50 rounded-lg">
+                    <strong>Студент:</strong> ${name} | <strong>Група:</strong> ${group} | <strong>Варіант:</strong> ${targetData.name}
+                </div>
+                <div class="text-lg font-bold text-indigo-900">
+                    Загальний результат виконання: <span class="text-2xl text-emerald-600">${score}</span> з 16 балів
+                </div>
+                <div class="space-y-2 text-sm mt-3">
+                    ${feedback.join('<br>')}
+                </div>
+                <p class="text-xs text-slate-500 mt-4 border-t pt-2">
+                    🔒 <em>Самостійна робота:</em> Якщо є помилки у Завданні 1, проаналізуйте вихідні дані ще раз та виправте класифікацію статей самостійно.
+                </p>
+            `;
+
+            resultCard.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Init initial state
+        window.onload = function() {
+            loadVariant(0);
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('student-date').value = today;
+        };
+    </script>
+</body>
+</html>
